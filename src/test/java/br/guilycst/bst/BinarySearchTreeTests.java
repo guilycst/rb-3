@@ -1,5 +1,6 @@
 package br.guilycst.bst;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class BinarySearchTreeTests {
 	@Before
 	public void setUp() {
 		intTree = new BinarySearchTree<>();
-		Arrays.stream(elements).forEach(c -> intTree.insert(c));
+		Arrays.stream(elements).forEach(c -> intTree.add(c));
 	}
 
 	@Test
@@ -58,6 +59,94 @@ public class BinarySearchTreeTests {
 
 	}
 
+	@Test
+	public void testDeleteNodeNoChildren() {
+		intTree.remove(4);
+
+		List<TreeStructAssertion<Integer>> assertions = new ArrayList<TreeStructAssertion<Integer>>() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			{ //
+				add(assertTreeStruct(8).l(3).r(10));
+				add(assertTreeStruct(3).l(1).r(6));
+				add(assertTreeStruct(6).l(null).r(7));
+				add(assertTreeStruct(7).l(null).r(null));
+				add(assertTreeStruct(10).l(null).r(14));
+				add(assertTreeStruct(14).l(13).r(null));
+				add(assertTreeStruct(13).l(null).r(null));
+			}
+		};
+
+		assertions.forEach(c -> {
+			c.assertNode(intTree.find(c.key));
+		});
+	}
+
+	@Test
+	public void testDeleteNodeOneChildren() {
+		intTree.remove(14);
+
+		List<TreeStructAssertion<Integer>> assertions = new ArrayList<TreeStructAssertion<Integer>>() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			{ //
+				add(assertTreeStruct(8).l(3).r(10));
+				add(assertTreeStruct(3).l(1).r(6));
+				add(assertTreeStruct(6).l(4).r(7));
+				add(assertTreeStruct(4).l(null).r(null));
+				add(assertTreeStruct(7).l(null).r(null));
+				add(assertTreeStruct(10).l(null).r(13));
+				// add(assertTreeStruct(14).l(13).r(null));
+				add(assertTreeStruct(13).l(null).r(null));
+			}
+		};
+
+		assertions.forEach(c -> {
+			c.assertNode(intTree.find(c.key));
+		});
+	}
+
+	@Test
+	public void testDeleteNodeBothChildren() {
+		intTree.remove(6);
+
+		List<TreeStructAssertion<Integer>> assertions = new ArrayList<TreeStructAssertion<Integer>>() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			{ //
+				add(assertTreeStruct(8).l(3).r(10));
+				add(assertTreeStruct(3).l(1).r(4));
+				add(assertTreeStruct(4).l(null).r(7));
+				// add(assertTreeStruct(4).l(null).r(null));
+				add(assertTreeStruct(7).l(null).r(null));
+				add(assertTreeStruct(10).l(null).r(14));
+				add(assertTreeStruct(14).l(13).r(null));
+				add(assertTreeStruct(13).l(null).r(null));
+			}
+		};
+
+		assertions.forEach(c -> {
+			c.assertNode(intTree.find(c.key));
+		});
+	}
+
+	@Test
+	public void traverseTest() {
+		Object[] expectedElements = { 1, 3, 4, 6, 7, 8, 10, 13, 14 };
+
+		Object[] actualElements = intTree.toArray();
+		assertArrayEquals(expectedElements, actualElements);
+	}
+
 	private <T extends Comparable<T>> TreeStructAssertion<T> assertTreeStruct(T key) {
 		return new TreeStructAssertion<T>(key);
 	}
@@ -82,7 +171,7 @@ public class BinarySearchTreeTests {
 		}
 
 		void assertNode(Optional<Node<T>> node) {
-			assertTrue(node.isPresent());
+			assertTrue("Node not present", node.isPresent());
 			assertNode(node, key);
 			assertNode(node.get().getLeft(), left);
 			assertNode(node.get().getRight(), right);
@@ -90,9 +179,9 @@ public class BinarySearchTreeTests {
 
 		void assertNode(Optional<Node<T>> node, T key) {
 			if (key == null) {
-				Assert.assertFalse(node.isPresent());
+				Assert.assertFalse("Expected node to NOT be present: " + node.toString(), node.isPresent());
 			} else {
-				Assert.assertTrue(node.get().getKey().isPresent());
+				Assert.assertTrue("Expected node to BE present: " + node.toString(), node.get().getKey().isPresent());
 				Assert.assertEquals(key, node.get().getKey().get());
 			}
 		}
